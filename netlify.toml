@@ -10,4 +10,4 @@
 [build.environment]
   SECRETS_SCAN_ENABLED = "false"
   NITRO_PRESET = "netlify"
-  VITE_API_URL = "https://jovial-sunburst-82a08c.netlify.app"
+  VITE_API_URL = "https://hilarious-kulfi-722916.netlify.app"
