@@ -1,4 +1,4 @@
-const BASE = "https://jovial-sunburst-82a08c.netlify.app";
+const BASE = import.meta.env.VITE_API_URL || "https://hilarious-kulfi-722916.netlify.app";
 
 function getAuthHeader() {
   const token = localStorage.getItem("admin_token");
