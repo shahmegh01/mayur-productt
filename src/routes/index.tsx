@@ -151,9 +151,7 @@ function Home() {
           >
             {allCategories.map((c) => (
               <motion.div key={c.name} variants={fadeUpSmall}>
-                <Link
-                  to="/products"
-                  search={{ category: c.name }}
+                <div
                   className="group block rounded-2xl border border-border bg-white hover:shadow-xl hover:border-orange/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                 >
                   <div className="w-full h-48 relative overflow-hidden bg-muted">
@@ -169,7 +167,7 @@ function Home() {
                     <h3 className="font-bold text-lg text-navy mb-1">{c.name}</h3>
                     <p className="text-sm text-muted-foreground">{c.desc}</p>
                   </div>
-                </Link>
+                </div>
               </motion.div>
             ))}
           </motion.div>
