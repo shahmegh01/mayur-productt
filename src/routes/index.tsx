@@ -1,43 +1,80 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Factory, Package, Truck, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { AnimatedSection, AnimatedCounter } from "@/components/AnimatedSection";
-import { fadeUp, fadeUpSmall, fadeIn, scaleIn, slideInLeft, slideInRight, staggerContainer, viewportOnce, EASE } from "@/lib/motion";
+import { getCategories, getProducts } from "@/lib/api";
+import {
+  fadeUp,
+  fadeUpSmall,
+  fadeIn,
+  scaleIn,
+  slideInLeft,
+  slideInRight,
+  staggerContainer,
+  viewportOnce,
+  EASE,
+} from "@/lib/motion";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Care By Mayur — Premium Home Cleaning Products" },
-      { name: "description", content: "Premium home cleaning products by Navkar Chemicals, Gujarat." },
+      {
+        name: "description",
+        content: "Premium home cleaning products by Navkar Chemicals, Gujarat.",
+      },
     ],
   }),
   component: Home,
 });
 
-
-const allCategories = [
-  { name: "Glass", desc: "Premium streak-free cleaners", gradient: "from-cyan-400 to-sky-600", img: "/categories/glass.png" },
-  { name: "Bathroom", desc: "Heavy-duty descaler", gradient: "from-sky-500 to-blue-700", img: "/categories/bathroom.png" },
-  { name: "Personal Care", desc: "Organic & moisturizing", gradient: "from-rose-400 to-pink-600", img: "/categories/personal.png" },
-  { name: "Laundry", desc: "Top & front load detergents", gradient: "from-blue-500 to-indigo-700", img: "/categories/laundry.png" },
-  { name: "Floor Care", desc: "Disinfectant + fragrance", gradient: "from-emerald-500 to-teal-700", img: "/categories/floor.png" },
-  { name: "Kitchen", desc: "Power of lemon", gradient: "from-yellow-400 to-orange-500", img: "/categories/kitchen.png" },
-];
+// A category card on the home page: a category from the database with a picture of one of its products
+type HomeCategory = { name: string; img: string; count: number };
 
 const heroWords = ["Trusted", "Cleaning", "Solutions,"];
 
 function Home() {
+  // null while loading; empty when there is nothing to show or the API could not be reached
+  const [homeCategories, setHomeCategories] = useState<HomeCategory[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([getCategories(), getProducts()])
+      .then(([cats, prods]) => {
+        if (cancelled) return;
+        setHomeCategories(
+          cats
+            .map((c) => {
+              const inCategory = prods.filter((p) => p.category === c.name);
+              return {
+                name: c.name,
+                img: inCategory.find((p) => p.image)?.image ?? "",
+                count: inCategory.length,
+              };
+            })
+            .filter((c) => c.count > 0),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setHomeCategories([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <SiteLayout>
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section 
+      <section
         className="relative overflow-hidden bg-navy text-white"
         style={{
           backgroundImage: "url('/OIP (4).webp')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         <div className="absolute inset-0 bg-navy/75 pointer-events-none" />
@@ -45,7 +82,12 @@ function Home() {
           className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange/20 rounded-full blur-3xl pointer-events-none"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1, x: ["0%", "3%", "0%"], y: ["0%", "-2%", "0%"] }}
-          transition={{ opacity: { duration: 1 }, scale: { duration: 1 }, x: { duration: 14, repeat: Infinity, ease: "easeInOut" }, y: { duration: 14, repeat: Infinity, ease: "easeInOut" } }}
+          transition={{
+            opacity: { duration: 1 },
+            scale: { duration: 1 },
+            x: { duration: 14, repeat: Infinity, ease: "easeInOut" },
+            y: { duration: 14, repeat: Infinity, ease: "easeInOut" },
+          }}
           style={{ translateY: "-33%", translateX: "25%" }}
         />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-orange/10 rounded-full blur-3xl translate-y-1/3 pointer-events-none" />
@@ -73,7 +115,10 @@ function Home() {
                   <motion.span
                     key={w}
                     className="inline-block mr-3"
-                    variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } } }}
+                    variants={{
+                      hidden: { opacity: 0, y: 18 },
+                      show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+                    }}
                   >
                     {w}
                   </motion.span>
@@ -106,18 +151,24 @@ function Home() {
               className="flex flex-wrap gap-3"
             >
               <Link to="/products">
-                <Button size="lg" className="bg-orange hover:bg-orange-light text-white font-semibold px-7 relative overflow-hidden group">
+                <Button
+                  size="lg"
+                  className="bg-orange hover:bg-orange-light text-white font-semibold px-7 relative overflow-hidden group"
+                >
                   <span className="relative z-10">View Our Products →</span>
                 </Button>
               </Link>
               <Link to="/contact">
-                <Button size="lg" variant="outline" className="border-white/60 text-white bg-transparent hover:bg-white hover:text-navy font-semibold px-7">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/60 text-white bg-transparent hover:bg-white hover:text-navy font-semibold px-7"
+                >
                   Contact Us
                 </Button>
               </Link>
             </motion.div>
           </div>
-
         </div>
       </section>
 
@@ -142,39 +193,60 @@ function Home() {
             <p className="text-muted-foreground">Manufactured with care, trusted in every home</p>
           </AnimatedSection>
 
-          <motion.div
-            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
-            initial="hidden"
-            whileInView="show"
-            viewport={viewportOnce}
-            variants={staggerContainer(0.08)}
-          >
-            {allCategories.map((c) => (
-              <motion.div key={c.name} variants={fadeUpSmall}>
+          {homeCategories === null ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" aria-hidden="true">
+              {[0, 1, 2].map((i) => (
                 <div
-                  className="group block rounded-2xl border border-border bg-white hover:shadow-xl hover:border-orange/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                  key={i}
+                  className="rounded-2xl border border-border bg-white overflow-hidden animate-pulse"
                 >
-                  <div className="w-full h-48 relative overflow-hidden bg-muted">
-                    <motion.img 
-                      src={c.img} 
-                      alt={c.name} 
-                      className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-lg text-navy mb-1">{c.name}</h3>
-                    <p className="text-sm text-muted-foreground">{c.desc}</p>
+                  <div className="w-full h-48 bg-muted" />
+                  <div className="p-6 space-y-2">
+                    <div className="h-5 w-1/2 rounded bg-muted" />
+                    <div className="h-4 w-1/3 rounded bg-muted" />
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"
+              initial="hidden"
+              whileInView="show"
+              viewport={viewportOnce}
+              variants={staggerContainer(0.08)}
+            >
+              {homeCategories.map((c) => (
+                <motion.div key={c.name} variants={fadeUpSmall}>
+                  <div className="group block rounded-2xl border border-border bg-white hover:shadow-xl hover:border-orange/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                    <div className="w-full h-48 relative overflow-hidden bg-muted">
+                      {c.img && (
+                        <motion.img
+                          src={c.img}
+                          alt={c.name}
+                          className="w-full h-full object-cover"
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
+                    </div>
+                    <div className="p-6">
+                      <h3 className="font-bold text-lg text-navy mb-1">{c.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {c.count} product{c.count !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
 
           <AnimatedSection className="text-center mt-8" variants={fadeUp} delay={0.1}>
             <Link to="/products">
-              <Button className="bg-orange hover:bg-orange-light text-white px-8">View All Products →</Button>
+              <Button className="bg-orange hover:bg-orange-light text-white px-8">
+                View All Products →
+              </Button>
             </Link>
           </AnimatedSection>
         </div>
@@ -190,10 +262,30 @@ function Home() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: Factory, title: "Factory Direct", desc: "Manufactured with care and consistent quality control", img: "/why/factory.jpg" },
-              { icon: Package, title: "Trusted Formulas", desc: "Proven formulations used in homes across India", img: "/why/formulas.jpg" },
-              { icon: Truck, title: "Reliable Supply", desc: "Consistent availability, every single time", img: "/why/supply.jpg" },
-              { icon: ShieldCheck, title: "Quality Assured", desc: "Every batch tested before it reaches you", img: "/why/quality.jpg" },
+              {
+                icon: Factory,
+                title: "Factory Direct",
+                desc: "Manufactured with care and consistent quality control",
+                img: "/why/factory.jpg",
+              },
+              {
+                icon: Package,
+                title: "Trusted Formulas",
+                desc: "Proven formulations used in homes across India",
+                img: "/why/formulas.jpg",
+              },
+              {
+                icon: Truck,
+                title: "Reliable Supply",
+                desc: "Consistent availability, every single time",
+                img: "/why/supply.jpg",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Quality Assured",
+                desc: "Every batch tested before it reaches you",
+                img: "/why/quality.jpg",
+              },
             ].map((f, i) => (
               <AnimatedSection
                 key={f.title}
@@ -249,7 +341,9 @@ function Home() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <AnimatedSection variants={fadeUp}>
-            <h2 className="text-3xl md:text-4xl font-bold text-navy text-center mb-12">What Our Customers Say</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-navy text-center mb-12">
+              What Our Customers Say
+            </h2>
           </AnimatedSection>
 
           <motion.div
@@ -260,9 +354,24 @@ function Home() {
             variants={staggerContainer(0.1)}
           >
             {[
-              { name: "Rakesh Patel", role: "Customer · Ahmedabad", quote: "Mayur products have been a consistent choice for us. Great quality and always available." },
-              { name: "Suresh Reddy", role: "Customer · Hyderabad", quote: "Very good range of cleaning products. The floor cleaner and dishwash gel are excellent." },
-              { name: "Anita Sharma", role: "Customer · Jaipur", quote: "Reliable brand. Great value for money and the team is always responsive to queries." },
+              {
+                name: "Rakesh Patel",
+                role: "Customer · Ahmedabad",
+                quote:
+                  "Mayur products have been a consistent choice for us. Great quality and always available.",
+              },
+              {
+                name: "Suresh Reddy",
+                role: "Customer · Hyderabad",
+                quote:
+                  "Very good range of cleaning products. The floor cleaner and dishwash gel are excellent.",
+              },
+              {
+                name: "Anita Sharma",
+                role: "Customer · Jaipur",
+                quote:
+                  "Reliable brand. Great value for money and the team is always responsive to queries.",
+              },
             ].map((t) => (
               <motion.div key={t.name} variants={fadeUpSmall}>
                 <div className="bg-white rounded-2xl p-6 border border-border hover:shadow-lg transition-shadow h-full">
@@ -290,15 +399,24 @@ function Home() {
           <AnimatedSection variants={scaleIn}>
             <div className="bg-gradient-to-br from-navy to-navy/90 rounded-3xl p-10 text-white text-center shadow-2xl">
               <h2 className="text-3xl font-bold mb-3">Interested in our products?</h2>
-              <p className="text-white/70 mb-6">Browse our full range or get in touch with us directly.</p>
+              <p className="text-white/70 mb-6">
+                Browse our full range or get in touch with us directly.
+              </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Link to="/products">
-                  <Button size="lg" className="bg-orange hover:bg-orange-light text-white font-semibold">
+                  <Button
+                    size="lg"
+                    className="bg-orange hover:bg-orange-light text-white font-semibold"
+                  >
                     Browse Products
                   </Button>
                 </Link>
                 <Link to="/contact">
-                  <Button size="lg" variant="outline" className="border-white/60 text-white bg-transparent hover:bg-white hover:text-navy font-semibold">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white/60 text-white bg-transparent hover:bg-white hover:text-navy font-semibold"
+                  >
                     Contact Us
                   </Button>
                 </Link>

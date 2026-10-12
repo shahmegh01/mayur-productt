@@ -4,25 +4,53 @@ import { Button } from "@/components/ui/button";
 import { Factory, ShieldCheck, Handshake } from "lucide-react";
 import { motion } from "framer-motion";
 import { AnimatedSection } from "@/components/AnimatedSection";
-import { fadeUp, slideInLeft, slideInRight, scaleIn, staggerContainer, viewportOnce, EASE } from "@/lib/motion";
+import {
+  fadeUp,
+  slideInLeft,
+  slideInRight,
+  scaleIn,
+  staggerContainer,
+  viewportOnce,
+  EASE,
+} from "@/lib/motion";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About — Care By Mayur" },
-      { name: "description", content: "Building trusted home cleaning products in Gujarat since 2017." },
+      {
+        name: "description",
+        content: "Building trusted home cleaning products in Gujarat since 2017.",
+      },
     ],
   }),
   component: About,
 });
 
 const whyDifferent = [
-  { icon: Factory, title: "Made in Gujarat", desc: "Manufactured in our dedicated facility in Chhatral with strict quality controls" },
-  { icon: ShieldCheck, title: "Quality Assured", desc: "Every batch tested before it reaches our customers" },
-  { icon: Handshake, title: "Customer First", desc: "We grow only when our customers are genuinely satisfied" },
+  {
+    icon: Factory,
+    title: "Made in Gujarat",
+    desc: "Manufactured in our dedicated facility in Chhatral with strict quality controls",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Quality Assured",
+    desc: "Every batch tested before it reaches our customers",
+  },
+  {
+    icon: Handshake,
+    title: "Customer First",
+    desc: "We grow only when our customers are genuinely satisfied",
+  },
 ];
 
-const gradients = ["from-emerald-500 to-teal-700", "from-yellow-400 to-orange-500", "from-sky-500 to-blue-700", "from-fuchsia-500 to-pink-600"];
+const gradients = [
+  "from-emerald-500 to-teal-700",
+  "from-yellow-400 to-orange-500",
+  "from-sky-500 to-blue-700",
+  "from-fuchsia-500 to-pink-600",
+];
 
 function About() {
   return (
@@ -58,24 +86,33 @@ function About() {
             <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed mb-5">
               Founded in 2017 in Chhatral, Gujarat, Care By Mayur (manufactured by Navkar Chemicals)
               started with a simple vision — to manufacture high-quality, affordable home cleaning
-              products that families across India can rely on every day. 
+              products that families across India can rely on every day.
             </p>
             <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
-              What began as a focused manufacturing effort has grown into a trusted range of products covering floor care,
-              kitchen, bathroom, laundry and personal care — all made with consistent quality and
-              care for the customer.
+              What began as a focused manufacturing effort has grown into a trusted range of
+              products covering floor care, kitchen, bathroom, laundry and personal care — all made
+              with consistent quality and care for the customer.
             </p>
           </AnimatedSection>
 
-          <AnimatedSection variants={slideInRight} className="lg:col-span-5 flex flex-col items-center justify-center text-center p-8 lg:p-10 bg-white rounded-3xl border border-border shadow-xl relative z-10">
+          <AnimatedSection
+            variants={slideInRight}
+            className="lg:col-span-5 flex flex-col items-center justify-center text-center p-8 lg:p-10 bg-white rounded-3xl border border-border shadow-xl relative z-10"
+          >
             <div className="absolute top-0 right-0 w-40 h-40 bg-orange/10 rounded-full -translate-y-1/2 translate-x-1/4 -z-10 blur-3xl"></div>
             <div className="w-48 h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden shadow-lg mb-6 border-4 border-orange/20 bg-muted">
-              <img src="/raja_cropped.png" alt="Founder of Mayur" className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500" />
+              <img
+                src="/raja_cropped.png"
+                alt="Founder of Mayur"
+                className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
+              />
             </div>
             <div className="w-12 h-1 bg-border rounded-full mb-5"></div>
             <h3 className="text-2xl lg:text-3xl font-bold text-navy mb-3">Founder of Mayur</h3>
             <p className="text-base lg:text-lg text-muted-foreground leading-relaxed italic">
-              "Our goal has always been to provide families with high-quality, reliable, and affordable cleaning solutions. We believe in building trust through consistent quality and a true customer-first approach."
+              "Our goal has always been to provide families with high-quality, reliable, and
+              affordable cleaning solutions. We believe in building trust through consistent quality
+              and a true customer-first approach."
             </p>
           </AnimatedSection>
         </div>

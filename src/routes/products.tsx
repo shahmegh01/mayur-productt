@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/SiteLayout";
 import { Button } from "@/components/ui/button";
@@ -11,57 +11,77 @@ import { AnimatedSection } from "@/components/AnimatedSection";
 import { fadeUp, fadeUpSmall, staggerContainer, viewportOnce, EASE } from "@/lib/motion";
 
 export const Route = createFileRoute("/products")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { category?: string } => {
     return {
-      category: search.category as string | undefined,
-    }
+      category: typeof search.category === "string" ? search.category : undefined,
+    };
   },
   head: () => ({ meta: [{ title: "Products — Care By Mayur" }] }),
   component: Products,
 });
 
-
 function QueryForm({ productName, onClose }: { productName?: string; onClose?: () => void }) {
-  const [f, setF] = useState({ name: "", phone: "", message: productName ? `I am interested in ${productName}` : "" });
+  const [f, setF] = useState({
+    name: "",
+    phone: "",
+    message: productName ? `I am interested in ${productName}` : "",
+  });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!f.name.trim()) { toast.error("Please enter your name"); return; }
-    if (!/^[6-9]\d{9}$/.test(f.phone)) { toast.error("Enter valid 10-digit mobile number"); return; }
-    if (!f.message.trim()) { toast.error("Please enter your query"); return; }
+    if (!f.name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(f.phone)) {
+      toast.error("Enter valid 10-digit mobile number");
+      return;
+    }
+    if (!f.message.trim()) {
+      toast.error("Please enter your query");
+      return;
+    }
     setLoading(true);
     try {
-      await saveQuery({ name: f.name, phone: f.phone, product_name: productName, message: f.message });
-    } catch {
-      const q = JSON.parse(localStorage.getItem("mayur_queries") || "[]");
-      q.unshift({ ...f, product_name: productName, at: new Date().toISOString() });
-      localStorage.setItem("mayur_queries", JSON.stringify(q));
-    } finally { setLoading(false); }
+      await saveQuery({
+        name: f.name,
+        phone: f.phone,
+        product_name: productName,
+        message: f.message,
+      });
+    } catch (e) {
+      // Tell the customer it did not go through, so they can call or WhatsApp instead
+      toast.error(e instanceof Error ? e.message : "Could not send your query. Please try again.");
+      return;
+    } finally {
+      setLoading(false);
+    }
     setDone(true);
     toast.success("Query sent! We'll call you soon.");
     setTimeout(() => onClose?.(), 2000);
   };
 
-  if (done) return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.35, ease: EASE }}
-      className="text-center py-8"
-    >
+  if (done)
+    return (
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.1, type: "spring", stiffness: 260, damping: 18 }}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.35, ease: EASE }}
+        className="text-center py-8"
       >
-        <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-3" />
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1, type: "spring", stiffness: 260, damping: 18 }}
+        >
+          <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-3" />
+        </motion.div>
+        <p className="font-bold text-navy text-lg">Query Sent!</p>
+        <p className="text-muted-foreground text-sm mt-1">Our team will call you within 2 hours.</p>
       </motion.div>
-      <p className="font-bold text-navy text-lg">Query Sent!</p>
-      <p className="text-muted-foreground text-sm mt-1">Our team will call you within 2 hours.</p>
-    </motion.div>
-  );
+    );
 
   return (
     <form onSubmit={submit} className="space-y-3 mt-4">
@@ -90,12 +110,24 @@ function QueryForm({ productName, onClose }: { productName?: string; onClose?: (
           value={f.message}
           onChange={(e) => setF({ ...f, message: e.target.value })}
           rows={3}
+          maxLength={2000}
           placeholder="What would you like to know?"
           className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:border-orange focus:ring-2 focus:ring-orange/15 transition-all resize-none"
         />
       </div>
-      <Button type="submit" disabled={loading} className="w-full bg-orange hover:bg-orange-light text-white">
-        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : "Send Query →"}
+      <Button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-orange hover:bg-orange-light text-white"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Sending...
+          </>
+        ) : (
+          "Send Query →"
+        )}
       </Button>
     </form>
   );
@@ -119,11 +151,13 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
 
       <div className="p-6">
         <h2 className="text-2xl font-bold text-navy mb-2">{product.name}</h2>
-        <p className="text-muted-foreground leading-relaxed mb-5">{product.description}</p>
+        <p className="text-muted-foreground leading-relaxed mb-5 whitespace-pre-line">
+          {product.description}
+        </p>
 
         <h3 className="font-semibold text-navy mb-3">Key Features</h3>
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
-          {product.features.map((feat) => (
+          {(product.features ?? []).map((feat) => (
             <li key={feat} className="flex items-start gap-2 text-sm text-navy/80">
               <CheckCircle2 className="w-4 h-4 text-orange shrink-0 mt-0.5" />
               {feat}
@@ -133,8 +167,11 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
 
         <h3 className="font-semibold text-navy mb-3">Available Pack Sizes</h3>
         <div className="flex flex-wrap gap-2 mb-6">
-          {product.packs.map((pk) => (
-            <span key={pk.size} className="px-4 py-1.5 rounded-lg border-2 border-orange/30 text-sm font-medium text-navy bg-orange/5">
+          {(product.packs ?? []).map((pk) => (
+            <span
+              key={pk.size}
+              className="px-4 py-1.5 rounded-lg border-2 border-orange/30 text-sm font-medium text-navy bg-orange/5"
+            >
               {pk.size}
             </span>
           ))}
@@ -142,7 +179,9 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
 
         <div className="border-t border-border pt-5">
           <h3 className="font-bold text-navy text-lg mb-1">Send a Query</h3>
-          <p className="text-sm text-muted-foreground">Interested? Leave your details and we'll call you back.</p>
+          <p className="text-sm text-muted-foreground">
+            Interested? Leave your details and we'll call you back.
+          </p>
           <QueryForm productName={product.name} onClose={onClose} />
         </div>
       </div>
@@ -158,17 +197,26 @@ function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadFailed(false);
+    Promise.all([getCategories(), getProducts()])
+      .then(([cats, prods]) => {
+        setCategories(["All", ...cats.map((c) => c.name)]);
+        setProducts(prods);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoadFailed(true);
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
-    Promise.all([getCategories(), getProducts()]).then(([cats, prods]) => {
-      setCategories(["All", ...cats.map(c => c.name)]);
-      setProducts(prods);
-      setLoading(false);
-    }).catch(e => {
-      toast.error("Failed to load products");
-      setLoading(false);
-    });
-  }, []);
+    load();
+  }, [load]);
 
   useEffect(() => {
     if (search.category) {
@@ -176,9 +224,36 @@ function Products() {
     }
   }, [search.category]);
 
-  const filtered = activeCat === "All" ? products : products.filter((p) => p.category === activeCat);
+  // A link can name a category that no longer exists; show everything instead of an empty page
+  useEffect(() => {
+    if (categories.length > 0 && !categories.includes(activeCat)) {
+      setActiveCat("All");
+    }
+  }, [categories, activeCat]);
 
-  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+  const filtered =
+    activeCat === "All" ? products : products.filter((p) => p.category === activeCat);
+
+  if (loading || loadFailed)
+    return (
+      <SiteLayout>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
+          {loading ? (
+            <Loader2 className="w-8 h-8 animate-spin text-orange" />
+          ) : (
+            <>
+              <p className="font-semibold text-navy">We couldn't load the products right now.</p>
+              <p className="text-sm text-muted-foreground">
+                Please check your connection and try again.
+              </p>
+              <Button onClick={load} className="bg-orange hover:bg-orange-light text-white">
+                Try again
+              </Button>
+            </>
+          )}
+        </div>
+      </SiteLayout>
+    );
 
   return (
     <SiteLayout>
@@ -214,8 +289,9 @@ function Products() {
                   key={c}
                   type="button"
                   onClick={() => setActiveCat(c)}
-                  className={`relative px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors duration-200 ${activeCat === c ? "text-white" : "text-navy hover:text-orange"
-                    }`}
+                  className={`relative px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
+                    activeCat === c ? "text-white" : "text-navy hover:text-orange"
+                  }`}
                 >
                   {activeCat === c && (
                     <motion.span
@@ -248,8 +324,14 @@ function Products() {
             animate={{ opacity: 1 }}
             className="text-sm text-muted-foreground mb-5"
           >
-            Showing <span className="font-semibold text-navy">{filtered.length}</span> product{filtered.length !== 1 ? "s" : ""}
-            {activeCat !== "All" && <> in <span className="font-semibold text-orange">{activeCat}</span></>}
+            Showing <span className="font-semibold text-navy">{filtered.length}</span> product
+            {filtered.length !== 1 ? "s" : ""}
+            {activeCat !== "All" && (
+              <>
+                {" "}
+                in <span className="font-semibold text-orange">{activeCat}</span>
+              </>
+            )}
           </motion.p>
 
           <motion.div
@@ -286,15 +368,23 @@ function Products() {
                   </div>
                   <div className="p-5">
                     <h3 className="font-bold text-navy text-base mb-1.5">{p.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{p.description}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                      {p.description}
+                    </p>
                     <div className="flex flex-wrap gap-1.5 mb-4">
-                      {p.packs.map((pk) => (
-                        <span key={pk.size} className="text-xs px-2 py-0.5 bg-orange/10 text-orange rounded-md font-medium">
+                      {(p.packs ?? []).map((pk) => (
+                        <span
+                          key={pk.size}
+                          className="text-xs px-2 py-0.5 bg-orange/10 text-orange rounded-md font-medium"
+                        >
                           {pk.size}
                         </span>
                       ))}
                     </div>
-                    <Button onClick={() => setSelected(p)} className="w-full bg-navy hover:bg-navy/90 text-white text-sm h-9">
+                    <Button
+                      onClick={() => setSelected(p)}
+                      className="w-full bg-navy hover:bg-navy/90 text-white text-sm h-9"
+                    >
                       View Details & Query
                     </Button>
                   </div>

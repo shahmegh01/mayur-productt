@@ -24,8 +24,8 @@ function AdminLogin() {
       localStorage.setItem("admin_token", res.token);
       toast.success("Logged in successfully");
       navigate({ to: "/admin" });
-    } catch (error: any) {
-      toast.error(error.message || "Login failed");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Login failed");
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,9 @@ function AdminLogin() {
         <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-border p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-navy mb-2">Admin Login</h1>
-            <p className="text-muted-foreground text-sm">Sign in to manage products and categories</p>
+            <p className="text-muted-foreground text-sm">
+              Sign in to manage products and categories
+            </p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -60,7 +62,11 @@ function AdminLogin() {
                 placeholder="Enter password"
               />
             </div>
-            <Button type="submit" disabled={loading} className="w-full py-6 bg-navy hover:bg-navy/90 text-white rounded-xl mt-4">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full py-6 bg-navy hover:bg-navy/90 text-white rounded-xl mt-4"
+            >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
             </Button>
           </form>

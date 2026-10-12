@@ -1,17 +1,29 @@
 const BASE = import.meta.env.VITE_API_URL || "https://hilarious-kulfi-722916.netlify.app";
 
-function getAuthHeader() {
+// status is the HTTP status, or 0 when the request never reached the server
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+function getAuthHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
   const token = localStorage.getItem("admin_token");
-  return token ? { "Authorization": `Bearer ${token}` } : {};
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
   const finalOptions = { ...options };
-  
+
   const isFormData = finalOptions.body instanceof FormData;
   const headers: Record<string, string> = {
     ...getAuthHeader(),
-    ...(options?.headers as Record<string, string> || {})
+    ...((options?.headers as Record<string, string>) || {}),
   };
 
   if (!isFormData) {
@@ -19,10 +31,16 @@ async function req<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   finalOptions.headers = headers;
-  
-  const res = await fetch(`${BASE}${path}`, finalOptions);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Request failed");
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, finalOptions);
+  } catch {
+    throw new ApiError("Could not reach the server. Check your connection and try again.", 0);
+  }
+  // The API answers in JSON, but a gateway error page does not
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(data?.error || "Request failed", res.status);
   return data as T;
 }
 
@@ -76,7 +94,7 @@ export async function saveContact(m: ContactMsg) {
 export async function login(username: string, password: string) {
   return req<{ token: string }>("/api/login", {
     method: "POST",
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password }),
   });
 }
 
@@ -91,7 +109,14 @@ export async function verifyToken() {
 export async function addCategory(name: string) {
   return req<{ success: boolean }>("/api/categories", {
     method: "POST",
-    body: JSON.stringify({ name })
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function renameCategory(id: number, name: string) {
+  return req<{ success: boolean }>(`/api/categories/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ name }),
   });
 }
 
@@ -106,7 +131,15 @@ export async function getProducts() {
 export async function addProduct(data: FormData) {
   return req<{ success: boolean }>("/api/products", {
     method: "POST",
-    body: data
+    body: data,
+  });
+}
+
+// Leave "imageFile" out of the form data to keep the product's current image
+export async function updateProduct(id: number, data: FormData) {
+  return req<{ success: boolean }>(`/api/products/${id}`, {
+    method: "PUT",
+    body: data,
   });
 }
 

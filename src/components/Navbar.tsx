@@ -3,8 +3,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-
-
 const links = [
   { to: "/", label: "Home" },
   { to: "/products", label: "Products" },
@@ -31,8 +29,9 @@ export function Navbar() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md transition-shadow duration-300 ${scrolled ? "shadow-md" : "border-b border-border"
-        }`}
+      className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md transition-shadow duration-300 ${
+        scrolled ? "shadow-md" : "border-b border-border"
+      }`}
     >
       <div className="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center group">
@@ -85,11 +84,23 @@ export function Navbar() {
         <button className="lg:hidden p-1" onClick={() => setOpen(!open)} aria-label="Menu">
           <AnimatePresence mode="wait" initial={false}>
             {open ? (
-              <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+              <motion.span
+                key="x"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
                 <X className="w-6 h-6" />
               </motion.span>
             ) : (
-              <motion.span key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+              <motion.span
+                key="menu"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
                 <Menu className="w-6 h-6" />
               </motion.span>
             )}
@@ -115,13 +126,19 @@ export function Navbar() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05, duration: 0.25 }}
                 >
-                  <Link to={l.to} className="block text-base font-medium text-navy py-1.5 hover:text-orange">
+                  <Link
+                    to={l.to}
+                    className="block text-base font-medium text-navy py-1.5 hover:text-orange"
+                  >
                     {l.label}
                   </Link>
                 </motion.div>
               ))}
               <div className="pt-3 border-t space-y-2">
-                <a href="https://wa.me/918200613891" className="block text-sm text-green-700 font-medium py-1">
+                <a
+                  href="https://wa.me/918200613891"
+                  className="block text-sm text-green-700 font-medium py-1"
+                >
                   💬 WhatsApp Us
                 </a>
                 <a href="tel:+918200613891" className="block text-sm text-navy font-medium py-1">

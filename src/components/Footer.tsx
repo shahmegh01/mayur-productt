@@ -23,7 +23,15 @@ export function Footer() {
                 <ellipse cx="12" cy="4" rx="0.7" ry="1" fill="#0A1628" />
                 <path d="M12 10 Q9 12 8 16" stroke="#2ecc71" strokeWidth="0.7" fill="none" />
                 <path d="M12 10 Q15 12 16 16" stroke="#2ecc71" strokeWidth="0.7" fill="none" />
-                <line x1="12" y1="11" x2="12" y2="20" stroke="#FF6B2C" strokeWidth="1.2" strokeLinecap="round" />
+                <line
+                  x1="12"
+                  y1="11"
+                  x2="12"
+                  y2="20"
+                  stroke="#FF6B2C"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                />
               </svg>
             </div>
             <div>
@@ -32,7 +40,8 @@ export function Footer() {
             </div>
           </div>
           <p className="text-sm text-white/70 leading-relaxed">
-            Premium home cleaning products manufactured with care. Trusted by customers across India since 2017.
+            Premium home cleaning products manufactured with care. Trusted by customers across India
+            since 2017.
           </p>
         </motion.div>
 
@@ -47,7 +56,9 @@ export function Footer() {
               { to: "/contact", label: "Contact" },
             ].map((l) => (
               <li key={l.to}>
-                <Link to={l.to} className="hover:text-orange transition-colors">{l.label}</Link>
+                <Link to={l.to} className="hover:text-orange transition-colors">
+                  {l.label}
+                </Link>
               </li>
             ))}
           </ul>
@@ -61,15 +72,42 @@ export function Footer() {
               <span className="mt-0.5">📍</span>
               <span>22-23, Shreji Estate, Nr. Ambavpura Road, G.I.D.C Chhatral, Chhatral</span>
             </li>
-            <li>📞 <a href="tel:+918200613891" className="hover:text-orange transition-colors">+91 82006 13891</a></li>
-            <li>📧 <a href="mailto:navkarchemicals.info@gmail.com" className="hover:text-orange transition-colors">navkarchemicals.info@gmail.com</a></li>
-            <li>💬 <a href="https://wa.me/918200613891" target="_blank" rel="noreferrer" className="hover:text-orange transition-colors">WhatsApp Us</a></li>
+            <li>
+              📞{" "}
+              <a href="tel:+918200613891" className="hover:text-orange transition-colors">
+                +91 82006 13891
+              </a>
+            </li>
+            <li>
+              📧{" "}
+              <a
+                href="mailto:navkarchemicals.info@gmail.com"
+                className="hover:text-orange transition-colors"
+              >
+                navkarchemicals.info@gmail.com
+              </a>
+            </li>
+            <li>
+              💬{" "}
+              <a
+                href="https://wa.me/918200613891"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-orange transition-colors"
+              >
+                WhatsApp Us
+              </a>
+            </li>
           </ul>
         </motion.div>
       </motion.div>
 
-      <AnimatedSection className="max-w-7xl mx-auto px-4 lg:px-8 mt-10 pt-6 border-t border-white/10 text-center text-xs text-white/50" variants={fadeUp}>
-        © 2025 Care By Mayur — Navkar Chemicals. All rights reserved. | Made in Gujarat 🇮🇳
+      <AnimatedSection
+        className="max-w-7xl mx-auto px-4 lg:px-8 mt-10 pt-6 border-t border-white/10 text-center text-xs text-white/50"
+        variants={fadeUp}
+      >
+        © {new Date().getFullYear()} Care By Mayur — Navkar Chemicals. All rights reserved. | Made
+        in Gujarat 🇮🇳
       </AnimatedSection>
     </footer>
   );
